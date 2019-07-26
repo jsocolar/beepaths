@@ -1,4 +1,4 @@
-load('/Users/JacobSocolar/Dropbox/Work/Bee_Path/bombus.new.352.R')
+load('/Users/Jacob/Dropbox/Work/Bee_Path/bombus.new.352.R')
 
 ##### Example 1: Simulating 100 paths on a field of Astragalus, Castilleja, Lupinus, and Penstamon #####
 pr <- 20 # patch radius
@@ -21,7 +21,8 @@ pt_probs <- c(.9,.8,.7,.3,.15,.12,.1,.07,.03,.02) # Pollen transfer probs. This 
 # the path length.
 mcs <- bombus.new.352$coefficients
 msd_dist <- c(17.98465, 11.59513)
-plantnames <- c('Astrag', 'Castilleja', 'Penst', 'Lupinus')
+plantnames <- c('Astrag', 'Cast', 'Penst', 'Lupine')
+
 # (If you want to use the species covariates (and species-by-distance covariates) from the 
 # Bombus model, then plantnames needs to include at least two of these species. Any plantnames
 # not in this list will be interpreted as zero-covariates, which makes them equivalent to 
@@ -29,10 +30,10 @@ plantnames <- c('Astrag', 'Castilleja', 'Penst', 'Lupinus')
 # or proportion. Note that you can assign plantnames = NULL if you don't want to bother specifying
 # the names--that will give you names like plant1, plant2, etc, up to the length of nudiag.)
 patch <- patchsim(nudiag = nudiag, rho = rho, desired_values = desired_values, radius = pr, plantnames = plantnames)
-snow.start.time = proc.time()
+start.time = proc.time()
 trans_probs <- transprobs(fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, msd_dist = msd_dist)
-snow.end.time = proc.time()
-snow.dtime = snow.end.time - snow.start.time
+end.time = proc.time()
+dtime = end.time - start.time
 
 paths <- pathsim(nsim = 100, nstep = 10, fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, pollenvector = pt_probs, start = list(patch$pr,"none"), msd_dist = msd_dist, trans_probs = trans_probs)
 View(paths)
@@ -40,7 +41,7 @@ View(paths$paths) #numbers in cells correspond to row numbers in object fp
 #paths$paths shows 100 x 10-step paths
 #paths$pollen shows how many times a visit to each individual plant successfully delivered pollen
 
-
+##### EXAMPLES 2-4 HAVE NOT BEEN UPDATED TO REFLECT NEW CODE THAT USES TURNING ANGLES #####
 
 ##### Example 2: Simulating 100 paths on a single-species field #####
 pr <- 20 # patch radius

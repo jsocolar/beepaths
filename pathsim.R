@@ -10,9 +10,9 @@ transprobs <- function(fp, fp_dist, mcs, msd_dist){
           if(j != k){
             constancy <- as.numeric(fp$Species[j] == fp$Species[k]) - as.numeric(fp$Species[j] != fp$Species[k])
             distance <- (fp_dist[j,k]-msd_dist[1])/msd_dist[2] #mean and sd from "ALL paths 2015 2016 w constancy lambda.csv"
-            spCast <- fp$Species[k] == "Castilleja"
+            spCast <- fp$Species[k] == "Cast"
             spPenst <- fp$Species[k] == "Penst"
-            spLupine <- fp$Species[k] == "Lupinus"
+            spLupine <- fp$Species[k] == "Lupine"
             lambda <- fp$lambda[k]
             v1 <- c(fp$X[j] - fp$X[i], fp$Y[j] - fp$Y[i])
             v2 <- c(fp$X[k] - fp$X[j], fp$Y[k] - fp$Y[j])
@@ -34,7 +34,7 @@ transprobs <- function(fp, fp_dist, mcs, msd_dist){
 }
 
 
-pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, start, msd_dist, trans_probs){
+pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, pt_type="prob", start, msd_dist, trans_probs){
   # nsim: number of simulations to run
   # nstep: number of steps per simulation, either a single integer or an integer vector of length nsim
   # fp: a dataframe with columns named "Species", "X", "Y", "lambda", "uniqueID", and "prop".  Other columns will be ignored.
@@ -42,10 +42,12 @@ pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, start, msd_dist
   # start: 'random plant' initializes the path on a random plant in fp.
   #         an integer initializes the path on the plant corresponding to that row of fp
   #         passing a specific list structure initializes the path at a random point on the patch edge.
-  # pollenvector: a vector of pollen transfer probabilities. pollen_vector[i] gives the pollen
-  #     transfer probability between plants with i-1 plants visited in between.
-  # return probs: should the output include the matrix of plant-to-plant transition probabilities?
-  # msd: mean and standard deviation of distances from the data object to which the model that yields mcs was fit
+  # pollenvector: if pt_type == "amt", a vector of pollen transfer amounts, expressed as 
+  #               if pt_type == "prob", a vector of pollen transfer probabilities. pollenvector[i] gives 
+  #               the pollen transfer probability between plants with i-1 plants visited in between.
+  # pt_type: see pollenvector
+  # msd_dist: mean and standard deviation of distances from the data object to which the model that yields mcs 
+  #       was fit
   
   nplant <- nrow(fp)
   if(length(nstep) == 1){nstep <- rep(nstep, nsim)}
@@ -72,9 +74,9 @@ pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, start, msd_dist
         constancy <- as.numeric(spD == fp$Species[j]) - as.numeric(spD != fp$Species[j])
         d1 <- ((XD - fp$X[j])^2 + (YD - fp$Y[j])^2)^.5
         distance <- (d1-msd_dist[1])/msd_dist[2] 
-        spCast <- fp$Species[j] == "Castilleja"
+        spCast <- fp$Species[j] == "Cast"
         spPenst <- fp$Species[j] == "Penst"
-        spLupine <- fp$Species[j] == "Lupinus"
+        spLupine <- fp$Species[j] == "Lupine"
         lambda <- fp$lambda[j]
         cos.turn <- 0
         
@@ -100,9 +102,9 @@ pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, start, msd_dist
         if(spD == "none"){constancy <- 0}
         d1 <- ((XD - fp$X[j])^2 + (YD - fp$Y[j])^2)^.5
         distance <- (d1-msd_dist[1])/msd_dist[2] 
-        spCast <- fp$Species[j] == "Castilleja"
+        spCast <- fp$Species[j] == "Cast"
         spPenst <- fp$Species[j] == "Penst"
-        spLupine <- fp$Species[j] == "Lupinus"
+        spLupine <- fp$Species[j] == "Lupine"
         lambda <- fp$lambda[j]
         cos.turn <- 0
         
@@ -124,9 +126,9 @@ pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, start, msd_dist
         constancy <- as.numeric(spD1 == fp$Species[j]) - as.numeric(spD1 != fp$Species[j])
         d1 <- ((XD1 - fp$X[j])^2 + (YD1 - fp$Y[j])^2)^.5
         distance <- (d1-msd_dist[1])/msd_dist[2] 
-        spCast <- fp$Species[j] == "Castilleja"
+        spCast <- fp$Species[j] == "Cast"
         spPenst <- fp$Species[j] == "Penst"
-        spLupine <- fp$Species[j] == "Lupinus"
+        spLupine <- fp$Species[j] == "Lupine"
         lambda <- fp$lambda[j]
         v1 <- c(XD1 - XD, YD1 - YD)
         v2 <- c(fp$X[j] - XD1, fp$Y[j] - YD1)
@@ -162,11 +164,17 @@ pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, start, msd_dist
       for(p2 in (p1+1):(nstep[i]+1)){
         if((paths[i, p1] != paths[i, p2])){
           if(fp$Species[paths[i, p1]] == fp$Species[paths[i, p2]]){
-            pollen$success[paths[i, p2]] <- pollen$success[paths[i, p2]] + rbinom(1,1,pollenvector[p2 - p1])
+            if(pt_type == "amt"){
+              pollen$success[paths[i, p2]] <- pollen$success[paths[i, p2]] + pollenvector[p2 - p1] # if pollenvector is deterministic pollen transfer amounts
+            }else if(pt_type == "prob"){
+              pollen$success[paths[i, p2]] <- pollen$success[paths[i, p2]] + rbinom(1,1,pollenvector[p2 - p1]) # if pollenvector is Bernoulli pollen transfer probabilities (i.e. success/failure)
+            }else{stop('pt_type must be either amt or prob')}
           }
         }
       }
     }
   }
-  return(list(paths=paths, pollen=pollen, trans_probs=trans_probs))
+  fargs <- list(nsim, nstep, fp, fp_dist, mcs, pollenvector, pt_type, start, msd_dist, trans_probs)
+  names(fargs) <- c("nsim", "nstep", "fp", "fp_dist", "mcs", "pollenvector", "pt_type", "start", "msd_dist", "trans_probs")
+  return(list(paths=paths, pollen=pollen, trans_probs=trans_probs, args=fargs))
 }
