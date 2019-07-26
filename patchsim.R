@@ -63,7 +63,7 @@ patchsim <- function(nudiag, rho, plantnames = NULL, desired_values, radius){
     floral_locations2$X[i] <- ((frow - 1) %/% 501) / 10
     floral_locations2$Y[i] <- ((frow - 1) %% 501) / 10
   }
-  fp <- floral_locations2[((floral_locations2$X - 25)^2 + (floral_locations2$Y - 25)^2) < pr^2, ]
+  fp <- floral_locations2[((floral_locations2$X - 25)^2 + (floral_locations2$Y - 25)^2) < radius^2, ]
   fp_pattern <- spatstat::ppp(fp$X, fp$Y, c(0,50), c(0,50))
   fp_lambdas <- spatstat::density.ppp(fp_pattern, at="points", edge = F)
   fp$lambda <- fp_lambdas
@@ -94,5 +94,5 @@ patchsim <- function(nudiag, rho, plantnames = NULL, desired_values, radius){
     fp_dist <- fp_dist[fp$Species != 'NULLPLANT', fp$Species!='NULLPLANT']
     fp <- fp[fp$Species != 'NULLPLANT', ]
   }
-  return(list(fp = fp, fp_dist=fp_dist, pr = pr))
+  return(list(fp = fp, fp_dist=fp_dist, pr = radius))
 }
