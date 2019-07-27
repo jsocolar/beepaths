@@ -19,30 +19,56 @@ params <- data.frame(desired_values_1, desired_values_2, nudiag_1, nudiag_2, rho
                      plantnames_2, new_dist, stringsAsFactors = F)
 params <- params[-which(params$new_dist==3),]
 
-
 patch.rad <- 20
 
-for(i in 1:nrow(params)){
-  check1 <- check2 <- check3 <- T
-  while(check1 | check2 | check3){
-    patch <- patchsim(nudiag = c(params$nudiag_1[i], params$nudiag_2[i]),
-                      rho = matrix(c(params$rho_1[i], params$rho_2[i], params$rho_3[i], params$rho_4[i]), nrow=2, byrow = T),
-                      plantnames = c(params$plantnames_1[i], params$plantnames_2[i]),
-                      desired_values = c(50^2/(3.14159*patch.rad^2)*params$desired_values_1[i], 50^2/(3.14159*patch.rad^2)*params$desired_values_2[i]),
-                      radius = patch.rad)
-    check1 <- abs(log(sum(patch$fp$Species == params$plantnames_1[i])/params$desired_values_1[i])) > .356
-    check2 <- abs(log(sum(patch$fp$Species == params$plantnames_2[i])/params$desired_values_2[i])) > .356
-    rabr <- sum(patch$fp$Species == params$plantnames_1[i])/sum(patch$fp$Species == params$plantnames_2[i])
-    tabr <- params$desired_values_1[i]/params$desired_values_2[i]
-    check3 <- abs(log(rabr/tabr)) > .105
+load('/Users/JacobSocolar/Dropbox/Work/Bee_Path/bombus.new.352.R')
+
+pt_amts <- .2*.8^(0:19)
+mcs <- bombus.new.352$coefficients
+msd_dist <- c(17.98465, 11.59513)
+
+run_sims <- function(params, i){
+  outputs <- list()
+  for(j in 1:1){
+    check1 <- check2 <- check3 <- T
+    while(check1 | check2 | check3){
+      patch <- patchsim(nudiag = c(params$nudiag_1[i], params$nudiag_2[i]),
+                        rho = matrix(c(params$rho_1[i], params$rho_2[i], params$rho_3[i], params$rho_4[i]), nrow=2, byrow = T),
+                        plantnames = c(params$plantnames_1[i], params$plantnames_2[i]),
+                        desired_values = c(50^2/(3.14159*patch.rad^2)*params$desired_values_1[i], 50^2/(3.14159*patch.rad^2)*params$desired_values_2[i]),
+                        radius = patch.rad)
+      check1 <- abs(log(sum(patch$fp$Species == params$plantnames_1[i])/params$desired_values_1[i])) > .356
+      check2 <- abs(log(sum(patch$fp$Species == params$plantnames_2[i])/params$desired_values_2[i])) > .356
+      rabr <- sum(patch$fp$Species == params$plantnames_1[i])/sum(patch$fp$Species == params$plantnames_2[i])
+      tabr <- params$desired_values_1[i]/params$desired_values_2[i]
+      check3 <- abs(log(rabr/tabr)) > .105
+    }
+    trans_probs <- transprobs(fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, msd_dist = msd_dist)
+    mcs2 <- mcs
+    if(!is.na(params$new_dist[i])){
+      mcs2["distance"] <- params$new_dist[i]
+    }
+    paths <- pathsim(nsim = 1000, nstep = 10, fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs2, pollenvector = pt_amts, start = list(patch$pr,"none"), msd_dist = msd_dist, trans_probs = trans_probs, pt_type = "amt")
+    outputs[[j]] <- paths
   }
-  
+  return(outputs)
 }
 
-patchsim <- function(nudiag, rho, plantnames = NULL, desired_values, radius){
-  
-  
-  
-  
-  .2*.8^(0:20)
+library(doParallel)
+
+simulations <- list()
+
+s <- proc.time()                          # for keeping track of how long the job takes
+for(rowi in 1:nrow(params)){
+  print(rowi)
+  cl <- parallel::makeCluster(6)            # make a cluster (called cl) with 4 cores. Note that this function comes from the package 'parallel' on which 'doParallel' depends
+  doParallel::registerDoParallel(cl)        # some doParallel voodoo to get the cores ready for work
+  clusterCall(cl, function() library(RandomFields))
+  simulations[[rowi]] <- foreach(k = 1:6) %dopar% run_sims(params = params, i = rowi)
+  parallel::stopCluster(cl)                # Closing down our cluster
+}
+elapsed <- proc.time() - s               # how long the job took
+
+
+
   

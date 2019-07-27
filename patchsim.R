@@ -25,50 +25,54 @@ patchsim <- function(nudiag, rho, plantnames = NULL, desired_values, radius){
     desired_values <- c(desired_values, 100)
     nsp <- 2
   }
-  
-  model <- RMparswmX(nudiag=nudiag, rho=rho) # Random field model
-  x.seq <- y.seq <- seq(-10, 10, 0.04)
-  z <- RFsimulate(model = model, x=x.seq, y=y.seq) # Simulated realization of field
-  pixel_probs_unscaled <- data.frame(inv.logit(z@data[ ,1]))
-  for(i in 2:nsp){
-    pixel_probs_unscaled <- cbind(pixel_probs_unscaled, inv.logit(z@data[ ,i]))
-  }
-  pixel_probs <- pixel_probs_unscaled
-  for(i in 1:nsp){
-    pixel_probs[,i] <- pixel_probs_unscaled[,i] * desired_values[i]/sum(pixel_probs_unscaled[,i])
-  }
-  npixel <- nrow(pixel_probs)
-  floral_locations <- data.frame(rbinom(npixel, 1, pixel_probs[,1]))
-  for(i in 2:nsp){
-    floral_locations <- cbind(floral_locations, rbinom(npixel, 1, pixel_probs[,i]))
-  }
-  names(floral_locations) <- plantnames
-  nplants <- rowSums(floral_locations)
-  problem_pixels <- which(nplants > 1)
-  if(length(problem_pixels) > 0){
-    for(i in 1:length(problem_pixels)){
-      nsp <- nplants[problem_pixels[i]]
-      keeper <- sample(c(1:4), 1, prob = floral_locations[problem_pixels[i], ])
-      for(j in 1:4){
-        floral_locations[problem_pixels[i], j] <- as.numeric(keeper == j)
+  nplant <- 0
+  while(nplant == 0){
+    model <- RMparswmX(nudiag=nudiag, rho=rho) # Random field model
+    x.seq <- y.seq <- seq(-10, 10, 0.04)
+    z <- RFsimulate(model = model, x=x.seq, y=y.seq) # Simulated realization of field
+    pixel_probs_unscaled <- data.frame(inv.logit(z@data[ ,1]))
+    for(i in 2:nsp){
+      pixel_probs_unscaled <- cbind(pixel_probs_unscaled, inv.logit(z@data[ ,i]))
+    }
+    pixel_probs <- pixel_probs_unscaled
+    for(i in 1:nsp){
+      pixel_probs[,i] <- pixel_probs_unscaled[,i] * desired_values[i]/sum(pixel_probs_unscaled[,i])
+    }
+    npixel <- nrow(pixel_probs)
+    floral_locations <- data.frame(rbinom(npixel, 1, pixel_probs[,1]))
+    for(i in 2:nsp){
+      floral_locations <- cbind(floral_locations, rbinom(npixel, 1, pixel_probs[,i]))
+    }
+    names(floral_locations) <- plantnames
+    nplants <- rowSums(floral_locations)
+    problem_pixels <- which(nplants > 1)
+    if(length(problem_pixels) > 0){
+      for(i in 1:length(problem_pixels)){
+        nsp <- nplants[problem_pixels[i]]
+        keeper <- sample(c(1:ncol(floral_locations)), 1, prob = floral_locations[problem_pixels[i], ])
+        for(j in 1:ncol(floral_locations)){
+          floral_locations[problem_pixels[i], j] <- as.numeric(keeper == j)
+        }
       }
     }
+    plant_rows <- which(nplants > 0)
+    floral_locations2 <- data.frame(Species = rep(NA, length(plant_rows)),
+                                    X = 0, Y = 0)
+    for(i in 1:length(plant_rows)){
+      frow <- plant_rows[i]
+      floral_locations2$Species[i] <- colnames(floral_locations)[which(floral_locations[frow, ] == 1)]
+      floral_locations2$X[i] <- ((frow - 1) %/% 501) / 10
+      floral_locations2$Y[i] <- ((frow - 1) %% 501) / 10
+    }
+    fp <- floral_locations2[((floral_locations2$X - 25)^2 + (floral_locations2$Y - 25)^2) < radius^2, ]
+    fp_pattern <- spatstat::ppp(fp$X, fp$Y, c(0,50), c(0,50))
+    fp_lambdas <- spatstat::density.ppp(fp_pattern, at="points", edge = F)
+    fp$lambda <- fp_lambdas
+    
+    nplant <- nrow(fp)
   }
-  plant_rows <- which(nplants > 0)
-  floral_locations2 <- data.frame(Species = rep(NA, length(plant_rows)),
-                                  X = 0, Y = 0)
-  for(i in 1:length(plant_rows)){
-    frow <- plant_rows[i]
-    floral_locations2$Species[i] <- colnames(floral_locations)[which(floral_locations[frow, ] == 1)]
-    floral_locations2$X[i] <- ((frow - 1) %/% 501) / 10
-    floral_locations2$Y[i] <- ((frow - 1) %% 501) / 10
-  }
-  fp <- floral_locations2[((floral_locations2$X - 25)^2 + (floral_locations2$Y - 25)^2) < radius^2, ]
-  fp_pattern <- spatstat::ppp(fp$X, fp$Y, c(0,50), c(0,50))
-  fp_lambdas <- spatstat::density.ppp(fp_pattern, at="points", edge = F)
-  fp$lambda <- fp_lambdas
   
-  nplant <- nrow(fp)
+  
   fp$uniqueID <- paste0("indiv", 1:nplant)
   
   fp_dist <- matrix(NA, nrow = nplant, ncol = nplant)
