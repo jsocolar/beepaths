@@ -174,7 +174,7 @@ pathsim <- function(nsim, nstep, fp, fp_dist, mcs, pollenvector, pt_type="prob",
       }
     }
   }
-  fargs <- list(nsim, nstep, fp, fp_dist, mcs, pollenvector, pt_type, start, msd_dist, trans_probs)
-  names(fargs) <- c("nsim", "nstep", "fp", "fp_dist", "mcs", "pollenvector", "pt_type", "start", "msd_dist", "trans_probs")
-  return(list(paths=paths, pollen=pollen, trans_probs=trans_probs, args=fargs))
+  fargs <- list(nsim, nstep, fp, mcs, pollenvector, pt_type, start, msd_dist)
+  names(fargs) <- c("nsim", "nstep", "fp", "mcs", "pollenvector", "pt_type", "start", "msd_dist")
+  return(list(paths=paths, pollen=pollen, args=fargs))
 }
