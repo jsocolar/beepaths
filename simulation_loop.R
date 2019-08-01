@@ -61,7 +61,7 @@ simulations <- list()
 s <- proc.time()                          # for keeping track of how long the job takes
 for(rowi in 1:nrow(params)){
   print(rowi)
-  cl <- parallel::makeCluster(6)            # make a cluster (called cl) with 4 cores. Note that this function comes from the package 'parallel' on which 'doParallel' depends
+  cl <- parallel::makeCluster(6)            # make a cluster (called cl) with 6 cores. Note that this function comes from the package 'parallel' on which 'doParallel' depends
   doParallel::registerDoParallel(cl)        # some doParallel voodoo to get the cores ready for work
   clusterCall(cl, function() library(RandomFields))
   simulations[[rowi]] <- foreach(k = 1:6) %dopar% run_sims(params = params, i = rowi)
