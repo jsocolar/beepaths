@@ -29,7 +29,7 @@ msd_dist <- c(17.98465, 11.59513)
 
 run_sims <- function(params, i){
   outputs <- list()
-  for(j in 1:2){
+  for(j in 1:20){
     check1 <- check2 <- check3 <- T
     while(check1 | check2 | check3){
       patch <- patchsim(nudiag = c(params$nudiag_1[i], params$nudiag_2[i]),
