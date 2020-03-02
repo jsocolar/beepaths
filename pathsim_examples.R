@@ -1,4 +1,4 @@
-load('/Users/Jacob/Dropbox/Work/Bee_Path/bombus.new.352.R')
+load('/Users/JacobSocolar/Dropbox/Work/Bee_Path/bombus.new.352.R')
 
 ##### Example 1: Simulating 100 paths on a field of Astragalus, Castilleja, Lupinus, and Penstamon #####
 pr <- 20 # patch radius
@@ -109,7 +109,8 @@ pt_probs <- c(.9,.8,.7,.3,.15,.12,.1,.07,.03,.02)
 mcs <- bombus.576$coefficients
 plantnames <- c('Astrag', 'Castilleja', 'Penst', 'Lupinus')
 patch <- patchsim(nudiag = nudiag, rho = rho, desired_values = desired_values, radius = pr, plantnames = plantnames)
-paths <- pathsim(nsim = 500, nstep = 10, fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, pollenvector = pt_probs, start = list(patch$pr,"none"))
+trans_probs <- transprobs(fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, msd_dist = msd_dist)
+paths <- pathsim(nsim = 1000, nstep = 10, fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, pollenvector = pt_amts, start = list(patch$pr,"none"), msd_dist = msd_dist, trans_probs = trans_probs, pt_type = "amt")
 
 fp <- patch$fp
 fp$visitcount <- 0

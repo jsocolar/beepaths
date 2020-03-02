@@ -69,6 +69,8 @@ for(rowi in 1:nrow(params)){
 }
 elapsed <- proc.time() - s               # how long the job took
 
+save(simulations, file = "/Users/JacobSocolar/Dropbox/Work/Bee_Path/full_simulations.Rdata")
+
 
 
   
