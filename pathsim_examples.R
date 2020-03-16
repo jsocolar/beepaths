@@ -105,10 +105,13 @@ rho <- matrix(nc=4, c(1, .9, 0.2, .3,
                       .9, 1, 0.2, .5,
                       0.2, 0.2, 1, .5,
                       .3, .5, .5, 1))
-pt_probs <- c(.9,.8,.7,.3,.15,.12,.1,.07,.03,.02)
-mcs <- bombus.576$coefficients
+patch.rad <- 20
+pt_amts <- .2*.8^(0:19)
+mcs <- bombus.new.352$coefficients
+msd_dist <- c(17.98465, 11.59513)
+
 plantnames <- c('Astrag', 'Castilleja', 'Penst', 'Lupinus')
-patch <- patchsim(nudiag = nudiag, rho = rho, desired_values = desired_values, radius = pr, plantnames = plantnames)
+patch <- patchsim(nudiag = nudiag, rho = rho, desired_values = desired_values, radius = patch.rad, plantnames = plantnames)
 trans_probs <- transprobs(fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, msd_dist = msd_dist)
 paths <- pathsim(nsim = 1000, nstep = 10, fp = patch$fp, fp_dist = patch$fp_dist, mcs = mcs, pollenvector = pt_amts, start = list(patch$pr,"none"), msd_dist = msd_dist, trans_probs = trans_probs, pt_type = "amt")
 
@@ -123,8 +126,8 @@ for(i in 1:nrow(fp)){
 }
 head(fp)
 
-plot(fp$Y ~ fp$X, pch = 16, col = fp$color, main = 'plant locations')
-plot(fp$Y ~ fp$X, pch = 16, col = fp$color, cex = sqrt(fp$visitcount)/5, main = 'number of visits (sqrt)')
+plot(fp$Y ~ fp$X, pch = 16, col = fp$color, main = 'plant locations', asp = 1)
+plot(fp$Y ~ fp$X, pch = 16, col = fp$color, cex = sqrt(fp$visitcount)/5, main = 'number of visits (sqrt)', asp = 1)
 # scaled by the square root of the total visit count to visualize better
-plot(fp$Y ~ fp$X, pch = 16, col = fp$color, cex = sqrt(fp$pollencount)/5, main = 'number of pollen deliveries (sqrt)')
+plot(fp$Y ~ fp$X, pch = 16, col = fp$color, cex = sqrt(fp$pollencount)/2, main = 'number of pollen deliveries (sqrt)', asp = 1)
 # scaled by 

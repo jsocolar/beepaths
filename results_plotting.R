@@ -77,12 +77,66 @@ for(i in 1:nrow(p2)){
 
 
 s <- rbind(do.call("rbind", sim_summary_1), do.call("rbind", sim_summary_2))
+s$cv <- s$var/s$mean
 s$nr <- as.factor(paste(s$n1, s$r2, sep = "_"))
-boxplot(mean ~ sp*sp2*abun*nr, data = s, col = s$sp, notch = T)
+s$cov <- factor(s$nr, levels = c("50_-360", "0.01_0", "50_360"), labels = c("-", "0", "+"))
 
-s1 <- s[s$sp == 1 & s$dist == -3.65, ]
-boxplot(mean ~ sp2*abun*nr, data = s1, notch = T)
+s1 <- s[s$sp == 1 & s$sp2 == "Lupine" & s$dist == -3.65, ]
+boxplot(mean ~ cov*abun, data = s1, notch = T, col = 'goldenrod', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov*abun, data = s1, notch = T)
+#boxplot(cv ~ cov*abun, data = s1, notch = T)
+#boxplot(skew ~ cov*abun, data = s1, notch = T)
 
-s2 <- s[s$sp == 2 & s$dist == -3.65, ]
-boxplot(mean ~ sp2*abun*nr, data = s2, notch = T)
+s2 <- s[s$sp == 2 & s$sp2 == "Lupine" & s$dist == -3.65, ]
+boxplot(mean ~ cov*abun, data = s2, notch = T, col = 'darkmagenta', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov*abun, data = s2, notch = T)
+#boxplot(cv ~ cov*abun, data = s2, notch = T)
+#boxplot(skew ~ cov*abun, data = s2, notch = T)
+
+s3 <- s[s$sp == 1 & s$sp2 == "Penst" & s$dist == -3.65, ]
+boxplot(mean ~ cov, data = s3, notch = T, col = 'goldenrod', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov, data = s3, notch = T)
+#boxplot(cv ~ cov, data = s3, notch = T)
+#boxplot(skew ~ cov, data = s3, notch = T)
+
+s4 <- s[s$sp == 2 & s$sp2 == "Penst" & s$dist == -3.65, ]
+boxplot(mean ~ cov, data = s4, notch = T, col = 'mediumpurple3', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov, data = s4, notch = T)
+#boxplot(cv ~ cov, data = s4, notch = T)
+#boxplot(skew ~ cov, data = s4, notch = T)
+
+
+
+
+
+
+
+
+s1 <- s[s$sp == 1 & s$sp2 == "Lupine" & s$dist == 0, ]
+boxplot(mean ~ cov*abun, data = s1, notch = T, col = 'goldenrod', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov*abun, data = s1, notch = T)
+#boxplot(cv ~ cov*abun, data = s1, notch = T)
+#boxplot(skew ~ cov*abun, data = s1, notch = T)
+
+s2 <- s[s$sp == 2 & s$sp2 == "Lupine" & s$dist == 0, ]
+boxplot(mean ~ cov*abun, data = s2, notch = T, col = 'darkmagenta', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov*abun, data = s2, notch = T)
+#boxplot(cv ~ cov*abun, data = s2, notch = T)
+#boxplot(skew ~ cov*abun, data = s2, notch = T)
+
+
+
+
+
+s1 <- s[s$sp == 1 & s$sp2 == "Lupine" & s$dist == -7, ]
+boxplot(mean ~ cov*abun, data = s1, notch = T, col = 'goldenrod', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov*abun, data = s1, notch = T)
+#boxplot(cv ~ cov*abun, data = s1, notch = T)
+#boxplot(skew ~ cov*abun, data = s1, notch = T)
+
+s2 <- s[s$sp == 2 & s$sp2 == "Lupine" & s$dist == -7, ]
+boxplot(mean ~ cov*abun, data = s2, notch = T, col = 'darkmagenta', ylab = 'mean pollination', xlab = "", xaxt = 'n')
+#boxplot(var ~ cov*abun, data = s2, notch = T)
+#boxplot(cv ~ cov*abun, data = s2, notch = T)
+#boxplot(skew ~ cov*abun, data = s2, notch = T)
 
